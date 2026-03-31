@@ -586,6 +586,7 @@ def required_signal(target_snr, npix):
 continuous_targets = np.logspace(np.log10(targets.min()), np.log10(targets.max()), 400)
 compact_curve = required_signal(continuous_targets, npix_compact)
 extended_curve = required_signal(continuous_targets, npix_extended)
+shot_noise_curve = continuous_targets**2
 compact_points = required_signal(targets, npix_compact)
 extended_points = required_signal(targets, npix_extended)
 ratio_points = extended_points / compact_points
@@ -602,6 +603,7 @@ for ax in (ax1, ax2):
 
 ax1.loglog(continuous_targets, compact_curve, color='#f59e0b', lw=2.6, label='Diffraction-limited injection')
 ax1.loglog(continuous_targets, extended_curve, color='#60a5fa', lw=2.6, label='Seeing-limited IFU')
+ax1.loglog(continuous_targets, shot_noise_curve, color='#cbd5e1', lw=1.7, ls='--', alpha=0.9, label=r'Shot-noise limit ($N_{\\gamma}=\\mathrm{SNR}^2$)')
 ax1.scatter(targets, compact_points, color='#fbbf24', s=28, zorder=3)
 ax1.scatter(targets, extended_points, color='#93c5fd', s=28, zorder=3)
 ax1.set_ylabel('Required total photons', color='#e2e8f0', fontsize=11)
@@ -628,9 +630,12 @@ for idx, target in enumerate(targets):
     table.append({
         'target_snr': float(target),
         'compact_photons': float(compact_points[idx]),
+      'diffraction_limited_photons': float(compact_points[idx]),
         'extended_photons': float(extended_points[idx]),
+      'ifu_photons': float(extended_points[idx]),
         'ratio': float(ratio_points[idx]),
-        'extended_per_spaxel': float(extended_points[idx] / max(extended_spaxels, 1))
+      'extended_per_spaxel': float(extended_points[idx] / max(extended_spaxels, 1)),
+      'ifu_photons_per_spaxel': float(extended_points[idx] / max(extended_spaxels, 1))
     })
 
 summary = {
@@ -877,13 +882,23 @@ function buildTable(rows) {
   html += '<th>IFU photons per spaxel</th>';
   html += '</tr></thead><tbody>';
 
-  for (const row of rows) {
+  for (const rawRow of rows) {
+    const compactPhotons = Number(rawRow.compact_photons ?? rawRow.diffraction_limited_photons);
+    const extendedPhotons = Number(rawRow.extended_photons ?? rawRow.ifu_photons);
+    const perSpaxel = Number(rawRow.extended_per_spaxel ?? rawRow.ifu_photons_per_spaxel);
+    const ratio = Number(
+      rawRow.ratio ??
+      ((Number.isFinite(compactPhotons) && compactPhotons > 0 && Number.isFinite(extendedPhotons))
+        ? extendedPhotons / compactPhotons
+        : NaN)
+    );
+
     html += '<tr>';
-    html += `<td>${fmtNumber(row.target_snr)}</td>`;
-    html += `<td>${fmtNumber(row.compact_photons)}</td>`;
-    html += `<td>${fmtNumber(row.extended_photons)}</td>`;
-    html += `<td class="${ratioClass(row.ratio)}">${row.ratio.toFixed(2)}×</td>`;
-    html += `<td>${fmtNumber(row.extended_per_spaxel)}</td>`;
+    html += `<td>${fmtNumber(Number(rawRow.target_snr))}</td>`;
+    html += `<td>${Number.isFinite(compactPhotons) ? fmtNumber(compactPhotons) : '--'}</td>`;
+    html += `<td>${Number.isFinite(extendedPhotons) ? fmtNumber(extendedPhotons) : '--'}</td>`;
+    html += `<td class="${Number.isFinite(ratio) ? ratioClass(ratio) : ''}">${Number.isFinite(ratio) ? ratio.toFixed(2) + '×' : '--'}</td>`;
+    html += `<td>${Number.isFinite(perSpaxel) ? fmtNumber(perSpaxel) : '--'}</td>`;
     html += '</tr>';
   }
 
