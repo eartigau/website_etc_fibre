@@ -330,6 +330,28 @@
       text-align: center;
     }
 
+    .help-list {
+      color: #cbd5e1;
+      margin: 0;
+      padding-left: 1.1rem;
+    }
+
+    .help-list li + li {
+      margin-top: 0.45rem;
+    }
+
+    .footer-meta {
+      align-items: center;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 0.8rem;
+      justify-content: center;
+    }
+
+    .footer-meta strong {
+      color: #cbd5e1;
+    }
+
     .fade-in {
       animation: fadeIn 0.35s ease-in;
     }
@@ -547,10 +569,24 @@
       </p>
     </div>
   </div>
+
+  <div class="card mt-4">
+    <div class="card-header">🧭 Useful Steps</div>
+    <div class="card-body">
+      <ol class="help-list">
+        <li>Reload the page after a change and verify that the plot legend shows the shot-noise limit reference $N_{\gamma} = \mathrm{SNR}^2$.</li>
+        <li>Run one of your usual presets and check that the Required Photon Table fills the Diffraction-limited photons, Seeing-limited IFU photons, and IFU photons per spaxel columns.</li>
+      </ol>
+    </div>
+  </div>
 </div>
 
 <footer>
-  Powered by <strong>Pyodide</strong> and <strong>Matplotlib</strong> · Runs fully client-side and can be hosted directly on GitHub Pages
+  <div class="footer-meta">
+    <span>Powered by <strong>Pyodide</strong> and <strong>Matplotlib</strong></span>
+    <span>Runs fully client-side and can be hosted directly on GitHub Pages</span>
+    <span>Last update: <strong id="last-updated">loading…</strong></span>
+  </div>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
@@ -923,6 +959,20 @@ function buildSummary(summary) {
   `).join('');
 }
 
+function updateLastUpdated() {
+  const label = $id('last-updated');
+  if (!label) return;
+
+  const raw = document.lastModified;
+  const parsed = raw ? new Date(raw) : null;
+  if (parsed && !Number.isNaN(parsed.getTime())) {
+    label.textContent = parsed.toLocaleString();
+    return;
+  }
+
+  label.textContent = new Date().toLocaleString();
+}
+
 async function runComputation() {
   if (!pyodideInstance) return;
 
@@ -970,6 +1020,7 @@ restoreAutosave();
 setupAutosave();
 refreshPresetList();
 loadDefaultPresets();
+updateLastUpdated();
 initPyodide();
 </script>
 </body>

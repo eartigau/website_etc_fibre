@@ -11,6 +11,7 @@ The site runs entirely client-side using **Pyodide** (Python + NumPy + Matplotli
 
 - Solves for required photons instead of forward-calculating SNR
 - Compares diffraction-limited injection and seeing-limited IFU scenarios on the same plot
+- Overlays the shot-noise limiting case so the $N_{\gamma} = \mathrm{SNR}^2$ floor is visible on the graph
 - Shows the photon penalty of extracting many detector pixels
 - Builds a table with total photons, per-spaxel photons, and extended/compact ratio
 - Supports browser autosave plus version-controlled default presets from `.github/prompts/`
@@ -38,6 +39,12 @@ For the two scenarios used in the page:
 
 - Diffraction-limited injection case: `n_pix = compact_extract`
 - Seeing-limited IFU case: `n_pix = extended_spaxels × extended_extract`
+
+The plot also shows the shot-noise limit,
+
+$$N_{\gamma} = \mathrm{SNR}^2$$
+
+as a reference floor for the idealized case where detector noise is negligible.
 
 ## Default parameters
 
@@ -79,6 +86,13 @@ Helpful modes:
 
 - `./sync_andes_fibre_snr.sh --copy-only` refreshes the hosted copy without any git commit or push
 - `./sync_andes_fibre_snr.sh --skip-push` creates local commits in both repos without pushing
+
+## Useful checks
+
+After changing the page, a quick sanity check is:
+
+1. Reload the page and confirm the plot legend includes the shot-noise limit reference.
+2. Run one of your standard presets and verify the required-photon table populates the diffraction-limited photons, seeing-limited IFU photons, and IFU photons per spaxel columns.
 
 The hosted copy uses a public `prompts/` folder so it works inside the personal page without requiring root-level GitHub Pages changes.
 
