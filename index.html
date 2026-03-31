@@ -514,13 +514,6 @@
 
   <div id="output-section" class="d-none">
     <div class="card mb-4 fade-in">
-      <div class="card-header">📌 Quick Summary</div>
-      <div class="card-body">
-        <div class="metric-grid" id="summary-metrics"></div>
-      </div>
-    </div>
-
-    <div class="card mb-4 fade-in">
       <div class="card-header">📈 Required Photons vs Target SNR</div>
       <div class="card-body p-3 text-center">
         <img id="plot-img" alt="Required photons comparison plot">
@@ -942,22 +935,6 @@ function buildTable(rows) {
   $id('table-container').innerHTML = html;
 }
 
-function buildSummary(summary) {
-  const metrics = [
-    { label: 'Diffraction-limited extracted pixels', value: fmtNumber(summary.compact_pixels) },
-    { label: 'Seeing-limited IFU extracted pixels', value: fmtNumber(summary.extended_pixels) },
-    { label: 'Lowest diffraction photon target', value: fmtNumber(summary.min_compact) },
-    { label: 'Highest IFU photon target', value: fmtNumber(summary.max_extended) },
-    { label: 'Median photon penalty', value: fmtNumber(summary.median_ratio) + '×' }
-  ];
-
-  $id('summary-metrics').innerHTML = metrics.map(metric => `
-    <div class="metric-card">
-      <div class="metric-label">${metric.label}</div>
-      <div class="metric-value">${metric.value}</div>
-    </div>
-  `).join('');
-}
 
 function updateLastUpdated() {
   const label = $id('last-updated');
