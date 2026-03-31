@@ -70,9 +70,11 @@ copy_tool() {
     --exclude 'sync_andes_fibre_snr.sh' \
     "$SOURCE_DIR/" "$TARGET_DIR/"
 
-  rsync -a --delete \
-    --exclude '.DS_Store' \
-    "$SOURCE_DIR/.github/prompts/" "$PUBLIC_PROMPTS_DIR/"
+  if [[ -d "$SOURCE_DIR/.github/prompts" ]]; then
+    rsync -a --delete \
+      --exclude '.DS_Store' \
+      "$SOURCE_DIR/.github/prompts/" "$PUBLIC_PROMPTS_DIR/"
+  fi
 }
 
 commit_if_needed() {

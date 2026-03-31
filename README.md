@@ -64,7 +64,7 @@ Once deployed, your site will be at:
 `https://<your-github-username>.github.io/<repo-name>/`
 
 ## Personal page hosting
-
+ 
 This tool can also be hosted as a subpage of the personal site repository at:
 
 - `/Users/eartigau/GitHubProjects/page_perso/tools/andes_fibre_snr`
