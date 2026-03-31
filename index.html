@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photon Requirement Calculator</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔭</text></svg>">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg2: #1e293b;
+      --bg3: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #60a5fa;
+      --accent2: #f59e0b;
+      --border: #334155;
+      --success: #34d399;
+      --warn: #f59e0b;
+      --danger: #f87171;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at top right, rgba(96,165,250,0.16), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(245,158,11,0.10), transparent 32%),
+        var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+    }
+
+    .navbar {
+      background: linear-gradient(135deg, rgba(15,23,42,0.97), rgba(30,41,59,0.95));
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(14px);
+    }
+
+    .navbar-brand {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .navbar-brand span {
+      color: var(--accent);
+    }
+
+    .hero-copy {
+      color: #cbd5e1;
+      line-height: 1.7;
+      margin-bottom: 1.25rem;
+      max-width: 860px;
+    }
+
+    .card {
+      background: rgba(30,41,59,0.9);
+      border: 1px solid rgba(148,163,184,0.18);
+      border-radius: 16px;
+      box-shadow: 0 18px 50px rgba(2,6,23,0.28);
+    }
+
+    .card-header {
+      background: rgba(51,65,85,0.72);
+      border-bottom: 1px solid rgba(148,163,184,0.14);
+      border-radius: 16px 16px 0 0 !important;
+      color: var(--text);
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 0.9rem 1.25rem;
+    }
+
+    .form-label {
+      color: var(--muted);
+      font-size: 0.84rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .form-control,
+    .form-select {
+      background: rgba(51,65,85,0.82);
+      border: 1px solid #475569;
+      border-radius: 10px;
+      color: var(--text);
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+      background: rgba(51,65,85,0.95);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(96,165,250,0.16);
+      color: var(--text);
+    }
+
+    .form-control::placeholder {
+      color: #64748b;
+    }
+
+    .form-text,
+    .text-muted-soft {
+      color: #64748b;
+      font-size: 0.78rem;
+    }
+
+    .input-group-text {
+      background: rgba(51,65,85,0.82);
+      border-color: #475569;
+      color: var(--muted);
+    }
+
+    .status-bar {
+      align-items: center;
+      border-radius: 12px;
+      display: flex;
+      font-size: 0.92rem;
+      gap: 0.7rem;
+      padding: 0.75rem 1rem;
+    }
+
+    .status-loading {
+      background: rgba(245,158,11,0.08);
+      border: 1px solid rgba(245,158,11,0.30);
+      color: var(--warn);
+    }
+
+    .status-ready {
+      background: rgba(52,211,153,0.08);
+      border: 1px solid rgba(52,211,153,0.30);
+      color: var(--success);
+    }
+
+    .status-error {
+      background: rgba(248,113,113,0.08);
+      border: 1px solid rgba(248,113,113,0.30);
+      color: var(--danger);
+    }
+
+    .btn-compute {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 10px 24px rgba(59,130,246,0.30);
+      color: white;
+      font-size: 1.02rem;
+      font-weight: 600;
+      padding: 0.85rem 3rem;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .btn-compute:hover:not(:disabled) {
+      box-shadow: 0 14px 28px rgba(59,130,246,0.36);
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    .btn-compute:disabled {
+      background: var(--bg3);
+      box-shadow: none;
+      color: var(--muted);
+    }
+
+    .scenario-chip,
+    .preset-tag {
+      align-items: center;
+      border-radius: 999px;
+      display: inline-flex;
+      font-size: 0.77rem;
+      gap: 0.35rem;
+      padding: 0.2rem 0.65rem;
+    }
+
+    .scenario-chip {
+      background: rgba(96,165,250,0.12);
+      border: 1px solid rgba(96,165,250,0.24);
+      color: #bfdbfe;
+      margin-bottom: 0.6rem;
+    }
+
+    .preset-tag {
+      background: rgba(96,165,250,0.10);
+      border: 1px solid rgba(96,165,250,0.22);
+      color: var(--accent);
+      margin-right: 0.3rem;
+    }
+
+    .info-box {
+      background: rgba(96,165,250,0.05);
+      border: 1px solid rgba(96,165,250,0.18);
+      border-radius: 12px;
+      color: #cbd5e1;
+      font-size: 0.84rem;
+      line-height: 1.65;
+      padding: 0.9rem 1rem;
+    }
+
+    .metric-grid {
+      display: grid;
+      gap: 0.8rem;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+
+    .metric-card {
+      background: rgba(15,23,42,0.38);
+      border: 1px solid rgba(148,163,184,0.12);
+      border-radius: 12px;
+      padding: 0.8rem 0.95rem;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 0.78rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .metric-value {
+      color: white;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    #plot-img {
+      border-radius: 12px;
+      max-width: 100%;
+    }
+
+    .snr-table {
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.88rem;
+      width: 100%;
+    }
+
+    .snr-table th {
+      background: rgba(51,65,85,0.92);
+      border-bottom: 1px solid rgba(148,163,184,0.16);
+      color: var(--muted);
+      font-weight: 600;
+      padding: 0.6rem 0.85rem;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .snr-table th:first-child,
+    .snr-table td:first-child {
+      text-align: left;
+    }
+
+    .snr-table td {
+      background: rgba(30,41,59,0.88);
+      border-bottom: 1px solid rgba(148,163,184,0.08);
+      padding: 0.55rem 0.85rem;
+      text-align: center;
+    }
+
+    .snr-table td:first-child {
+      background: rgba(51,65,85,0.72);
+      color: #cbd5e1;
+      font-weight: 600;
+    }
+
+    .ratio-low {
+      color: #34d399;
+      font-weight: 700;
+    }
+
+    .ratio-mid {
+      color: #fbbf24;
+      font-weight: 700;
+    }
+
+    .ratio-high {
+      color: #f87171;
+      font-weight: 700;
+    }
+
+    .formula-box {
+      background: rgba(51,65,85,0.72);
+      border-radius: 12px;
+      margin: 0.75rem 0;
+      overflow-x: auto;
+      padding: 1rem 1.25rem;
+    }
+
+    .param-table {
+      color: #94a3b8;
+      font-size: 0.88rem;
+    }
+
+    .param-table td {
+      background: transparent;
+      border-color: rgba(148,163,184,0.10) !important;
+      padding: 0.45rem 0.65rem;
+    }
+
+    .param-table tr:last-child td {
+      border-bottom: none !important;
+    }
+
+    .badge-param {
+      background: rgba(96,165,250,0.12);
+      border-radius: 5px;
+      color: var(--accent);
+      font-family: monospace;
+      font-size: 0.84em;
+      padding: 0.12em 0.45em;
+    }
+
+    .btn-preset {
+      border-radius: 8px;
+      font-size: 0.82rem;
+      padding: 0.3rem 0.85rem;
+    }
+
+    footer {
+      background: rgba(30,41,59,0.9);
+      border-top: 1px solid rgba(148,163,184,0.14);
+      color: var(--muted);
+      font-size: 0.83rem;
+      margin-top: 3rem;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.35s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+<nav class="navbar navbar-dark px-4 py-3">
+  <span class="navbar-brand">🔭 Photon <span>Requirement</span> Calculator</span>
+  <span class="text-muted small d-none d-md-inline">Static GitHub Pages app powered by Pyodide</span>
+</nav>
+
+<div class="container-xl py-4" style="max-width: 1380px;">
+  <div class="hero-copy">
+    Enter a list of target SNR values and the page solves for the total detected photons needed to reach each target in two cases:
+    one diffraction-limited injection where all flux lands in a single spaxel, and one seeing-limited IFU case where the same total flux is spread across many spaxels before summing.
+    The same target SNR list is applied to both scenarios so the comparison is always done at identical requested SNR values.
+    The Python code runs entirely in the browser, so it works on GitHub Pages without a backend.
+  </div>
+
+  <div id="status-bar" class="status-bar status-loading mb-4">
+    <span id="status-spinner" class="spinner-border spinner-border-sm" role="status"></span>
+    <span id="status-text">Initializing Python environment — first load may take ~20 s…</span>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-lg-4">
+      <div class="card h-100">
+        <div class="card-header">⚙️ Detector And Stack</div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-sm-6 col-lg-12">
+              <label class="form-label" for="t_exp">Exposure time per frame</label>
+              <div class="input-group">
+                <input type="number" class="form-control" id="t_exp" value="600" min="0.0001" step="any">
+                <span class="input-group-text">s</span>
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-12">
+              <label class="form-label" for="n_frames">Number of stacked frames</label>
+              <input type="number" class="form-control" id="n_frames" value="12" min="1" step="1">
+              <div class="form-text">Each frame has one read. Read count is fixed and not user-configurable.</div>
+            </div>
+            <div class="col-sm-6 col-lg-12">
+              <label class="form-label" for="dark">Dark current</label>
+              <div class="input-group">
+                <input type="number" class="form-control" id="dark" value="0.01" min="0" step="any">
+                <span class="input-group-text">e⁻/s/pix</span>
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-12">
+              <label class="form-label" for="ron">Readout noise</label>
+              <div class="input-group">
+                <input type="number" class="form-control" id="ron" value="6" min="0" step="any">
+                <span class="input-group-text">e⁻/pix/read</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card h-100">
+        <div class="card-header">🌫️ Seeing-limited IFU Scenario</div>
+        <div class="card-body d-flex flex-column gap-3">
+          <div>
+            <div class="scenario-chip">Flux distributed across multiple spaxels</div>
+            <label class="form-label" for="extended_spaxels">Number of spaxels</label>
+            <input type="number" class="form-control" id="extended_spaxels" value="30" min="1" step="1">
+          </div>
+          <div>
+            <label class="form-label" for="extended_extract">Extraction width per spaxel</label>
+            <div class="input-group">
+              <input type="number" class="form-control" id="extended_extract" value="3" min="1" step="1">
+              <span class="input-group-text">pix</span>
+            </div>
+          </div>
+          <div class="info-box mt-auto">
+            The seeing-limited IFU case assumes the total source signal is distributed across all selected spaxels and then summed.
+            Noise scales with the full extracted detector area, so the required total photons increase as you add more extracted pixels.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card h-100">
+        <div class="card-header">✨ Diffraction-limited Injection Scenario</div>
+        <div class="card-body d-flex flex-column gap-3">
+          <div>
+            <div class="scenario-chip" style="background:rgba(245,158,11,0.10);border-color:rgba(245,158,11,0.22);color:#fde68a;">All flux concentrated in one spaxel</div>
+            <label class="form-label" for="compact_extract">Extraction width</label>
+            <div class="input-group">
+              <input type="number" class="form-control" id="compact_extract" value="3" min="1" step="1">
+              <span class="input-group-text">pix</span>
+            </div>
+          </div>
+          <div class="info-box mt-auto">
+            Gain is assumed to be 1, so photons and electrons are treated identically here.
+            The outputs report total detected photons across the full stack, plus the photon penalty for the seeing-limited IFU case relative to the diffraction-limited injection case.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">🎯 Shared Target SNR Values</div>
+    <div class="card-body">
+      <label class="form-label" for="target_snr_values">Target SNR list used for both scenarios</label>
+      <input type="text" class="form-control" id="target_snr_values" value="3, 5, 10, 20, 50, 100" placeholder="e.g. 3, 5, 10, 20, 50, 100">
+      <div class="form-text">Comma-separated target SNR values. Every value in this list is solved for both the compact and extended scenarios, then compared directly in the plot and table.</div>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">🗂️ Parameter Presets <span class="fw-normal small" style="color:var(--muted);" id="autosave-indicator"></span></div>
+    <div class="card-body">
+      <div class="row g-2 align-items-center flex-wrap">
+        <div class="col-12 col-md-5">
+          <select id="preset-select" class="form-select form-select-sm" style="font-size:0.85rem;">
+            <option value="">— select a preset to load —</option>
+          </select>
+        </div>
+        <div class="col-auto">
+          <button class="btn btn-sm btn-outline-info btn-preset" onclick="loadSelectedPreset()">Load</button>
+        </div>
+        <div class="col-auto ms-md-auto mt-2 mt-md-0">
+          <div class="input-group input-group-sm">
+            <input type="text" id="preset-name" class="form-control" placeholder="New preset name…" style="min-width:160px;background:var(--bg3);color:var(--text);border-color:#475569;">
+            <button class="btn btn-outline-success btn-preset" onclick="savePreset()">Save</button>
+            <button class="btn btn-outline-danger btn-preset" onclick="deletePreset()">Delete</button>
+          </div>
+        </div>
+      </div>
+      <div class="mt-2 text-muted-soft">
+        <span class="preset-tag">Default</span> presets are loaded from <code style="font-size:0.78rem;color:#94a3b8;">.github/prompts/</code> in the standalone repo, with a hosted fallback to <code style="font-size:0.78rem;color:#94a3b8;">prompts/</code>.
+        <span class="preset-tag">My</span> presets are stored in your browser and restored between visits.
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center mb-5">
+    <button id="compute-btn" class="btn btn-compute" onclick="runComputation()" disabled>
+      <span id="btn-text">⚡ Solve Photon Requirement</span>
+      <span id="btn-spinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
+    </button>
+  </div>
+
+  <div id="output-section" class="d-none">
+    <div class="card mb-4 fade-in">
+      <div class="card-header">📌 Quick Summary</div>
+      <div class="card-body">
+        <div class="metric-grid" id="summary-metrics"></div>
+      </div>
+    </div>
+
+    <div class="card mb-4 fade-in">
+      <div class="card-header">📈 Required Photons vs Target SNR</div>
+      <div class="card-body p-3 text-center">
+        <img id="plot-img" alt="Required photons comparison plot">
+      </div>
+    </div>
+
+    <div class="card mb-4 fade-in">
+      <div class="card-header">📋 Required Photon Table</div>
+      <div class="card-body p-3">
+        <div class="table-responsive">
+          <div id="table-container"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mt-2">
+    <div class="card-header">📐 Inverse Noise Model</div>
+    <div class="card-body" style="font-size:0.92rem;color:#cbd5e1;line-height:1.7;">
+      <p>
+        The calculator solves for the total signal $S$ needed to reach a requested SNR after stacking $N$ frames.
+        With one read per frame and gain $= 1$, the total variance for a scenario with $n_{\mathrm{pix}}$ extracted pixels is:
+      </p>
+      <div class="formula-box">
+        $$\mathrm{SNR} = \frac{S}{\sqrt{S + B}}, \qquad B = N\,n_{\mathrm{pix}}\left(\sigma_{\mathrm{RON}}^2 + I_{\mathrm{dark}}\,t\right)$$
+      </div>
+      <p>Rearranging gives a closed-form solution for the required total photons:</p>
+      <div class="formula-box">
+        $$S_{\mathrm{req}} = \frac{1}{2}\left[\mathrm{SNR}^2 + \sqrt{\mathrm{SNR}^4 + 4\,\mathrm{SNR}^2\,B}\right]$$
+      </div>
+      <div class="table-responsive mt-3">
+        <table class="param-table table table-sm table-borderless">
+          <tbody>
+            <tr><td style="width:130px;"><span class="badge-param">S</span></td><td>Total detected photons across the full stack</td></tr>
+            <tr><td><span class="badge-param">N</span></td><td>Number of stacked frames</td></tr>
+            <tr><td><span class="badge-param">t</span></td><td>Exposure time per frame in seconds</td></tr>
+            <tr><td><span class="badge-param">n_pix</span></td><td>Total extracted detector pixels in the scenario</td></tr>
+            <tr><td><span class="badge-param">σ_RON</span></td><td>Readout noise per pixel per frame</td></tr>
+            <tr><td><span class="badge-param">I_dark</span></td><td>Dark current in e⁻ / s / pix</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="mb-0 text-muted-soft">
+        Diffraction-limited injection scenario: $n_{\mathrm{pix}} = n_{\mathrm{extract,compact}}$.
+        Seeing-limited IFU scenario: $n_{\mathrm{pix}} = n_{\mathrm{spaxels}} \times n_{\mathrm{extract,extended}}$.
+      </p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Powered by <strong>Pyodide</strong> and <strong>Matplotlib</strong> · Runs fully client-side and can be hosted directly on GitHub Pages
+</footer>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+<script>
+'use strict';
+
+const PYTHON_CODE = `
+import base64
+import io
+import json as _json
+import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
+targets = np.array(_json.loads(target_snr_json), dtype=float)
+ron = float(ron)
+dark = float(dark)
+t_exp = float(t_exp)
+n_frames = int(n_frames)
+extended_spaxels = int(extended_spaxels)
+extended_extract = int(extended_extract)
+compact_extract = int(compact_extract)
+
+npix_compact = max(compact_extract, 1)
+npix_extended = max(extended_spaxels, 1) * max(extended_extract, 1)
+
+def required_signal(target_snr, npix):
+    target_snr = np.asarray(target_snr, dtype=float)
+    background = n_frames * npix * (ron**2 + dark * t_exp)
+    return 0.5 * (target_snr**2 + np.sqrt(target_snr**4 + 4.0 * target_snr**2 * background))
+
+continuous_targets = np.logspace(np.log10(targets.min()), np.log10(targets.max()), 400)
+compact_curve = required_signal(continuous_targets, npix_compact)
+extended_curve = required_signal(continuous_targets, npix_extended)
+compact_points = required_signal(targets, npix_compact)
+extended_points = required_signal(targets, npix_extended)
+ratio_points = extended_points / compact_points
+
+fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(11.5, 8.2), gridspec_kw={'height_ratios': [3.0, 1.25]})
+fig.patch.set_facecolor('#0f172a')
+
+for ax in (ax1, ax2):
+    ax.set_facecolor('#1e293b')
+    ax.grid(True, alpha=0.16, color='#475569')
+    ax.tick_params(colors='#94a3b8', labelsize=9)
+    for sp in ax.spines.values():
+        sp.set_edgecolor('#334155')
+
+ax1.loglog(continuous_targets, compact_curve, color='#f59e0b', lw=2.6, label='Diffraction-limited injection')
+ax1.loglog(continuous_targets, extended_curve, color='#60a5fa', lw=2.6, label='Seeing-limited IFU')
+ax1.scatter(targets, compact_points, color='#fbbf24', s=28, zorder=3)
+ax1.scatter(targets, extended_points, color='#93c5fd', s=28, zorder=3)
+ax1.set_ylabel('Required total photons', color='#e2e8f0', fontsize=11)
+ax1.set_title('Photon budget needed to hit the shared requested SNR targets', color='white', fontsize=13, fontweight='bold', pad=10)
+ax1.legend(facecolor='#1e293b', edgecolor='#475569', labelcolor='#e2e8f0', fontsize=9, framealpha=0.92)
+
+ax2.semilogx(targets, ratio_points, color='#34d399', lw=2.3)
+ax2.scatter(targets, ratio_points, color='#86efac', s=24, zorder=3)
+ax2.axhline(1.0, color='white', alpha=0.22, lw=1.1, ls='--')
+ax2.set_xlabel('Target SNR', color='#e2e8f0', fontsize=11)
+ax2.set_ylabel('Ext / Compact', color='#e2e8f0', fontsize=11)
+ax2.set_title('Photon penalty from extracting more pixels', color='white', fontsize=11, pad=8)
+
+plt.tight_layout(pad=2.2)
+
+buf = io.BytesIO()
+plt.savefig(buf, format='png', dpi=135, bbox_inches='tight', facecolor=fig.get_facecolor())
+buf.seek(0)
+image = base64.b64encode(buf.read()).decode()
+plt.close('all')
+
+table = []
+for idx, target in enumerate(targets):
+    table.append({
+        'target_snr': float(target),
+        'compact_photons': float(compact_points[idx]),
+        'extended_photons': float(extended_points[idx]),
+        'ratio': float(ratio_points[idx]),
+        'extended_per_spaxel': float(extended_points[idx] / max(extended_spaxels, 1))
+    })
+
+summary = {
+    'compact_pixels': int(npix_compact),
+    'extended_pixels': int(npix_extended),
+    'min_compact': float(compact_points.min()),
+    'max_extended': float(extended_points.max()),
+    'median_ratio': float(np.median(ratio_points))
+}
+
+_json.dumps({'image': image, 'table': table, 'summary': summary})
+`;
+
+let pyodideInstance = null;
+
+const AUTOSAVE_KEY = 'photon_solver_autosave_v1';
+const PRESETS_KEY = 'photon_solver_presets_v1';
+const INPUT_IDS = [
+  't_exp',
+  'n_frames',
+  'dark',
+  'ron',
+  'extended_spaxels',
+  'extended_extract',
+  'compact_extract',
+  'target_snr_values'
+];
+
+const $id = id => document.getElementById(id);
+const getVal = id => $id(id).value.trim();
+
+function parsePositiveList(id) {
+  return getVal(id)
+    .split(',')
+    .map(value => parseFloat(value.trim()))
+    .filter(value => Number.isFinite(value) && value > 0)
+    .slice(0, 20);
+}
+
+function setStatus(message, type) {
+  const bar = $id('status-bar');
+  bar.className = 'status-bar mb-4 status-' + type;
+  $id('status-text').textContent = message;
+  $id('status-spinner').style.display = type === 'loading' ? '' : 'none';
+}
+
+function fmtNumber(value) {
+  const abs = Math.abs(value);
+  if (abs >= 1e6) return (value / 1e6).toFixed(2) + 'M';
+  if (abs >= 1e3) return (value / 1e3).toFixed(2) + 'k';
+  if (abs >= 100) return value.toFixed(0);
+  if (abs >= 10) return value.toFixed(1);
+  if (abs >= 1) return value.toFixed(2);
+  return value.toPrecision(3);
+}
+
+function ratioClass(value) {
+  if (value <= 2) return 'ratio-low';
+  if (value <= 5) return 'ratio-mid';
+  return 'ratio-high';
+}
+
+function getInputValues() {
+  const values = {};
+  for (const id of INPUT_IDS) values[id] = $id(id).value;
+  return values;
+}
+
+function setInputValues(values) {
+  for (const id of INPUT_IDS) {
+    if (Object.prototype.hasOwnProperty.call(values, id)) {
+      $id(id).value = values[id];
+    }
+  }
+}
+
+function persistAutosave(label) {
+  localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(getInputValues()));
+  const indicator = $id('autosave-indicator');
+  if (indicator) indicator.textContent = label;
+}
+
+function setupAutosave() {
+  for (const id of INPUT_IDS) {
+    $id(id).addEventListener('input', () => persistAutosave('— auto-saved'));
+    $id(id).addEventListener('change', () => persistAutosave('— auto-saved'));
+  }
+}
+
+function restoreAutosave() {
+  const raw = localStorage.getItem(AUTOSAVE_KEY);
+  if (!raw) return;
+  try {
+    setInputValues(JSON.parse(raw));
+  } catch (error) {
+    console.warn('Autosave restore failed', error);
+  }
+}
+
+function getUserPresets() {
+  try {
+    return JSON.parse(localStorage.getItem(PRESETS_KEY)) || {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function setUserPresets(presets) {
+  localStorage.setItem(PRESETS_KEY, JSON.stringify(presets));
+}
+
+function getDefaultPresetBasePath() {
+  return window.__defaultPresetBasePath__ || '.github/prompts';
+}
+
+function refreshPresetList() {
+  const select = $id('preset-select');
+  const previous = select.value;
+  select.innerHTML = '<option value="">— select a preset to load —</option>';
+
+  const defaults = window.__defaultPresets__ || {};
+  if (Object.keys(defaults).length) {
+    const group = document.createElement('optgroup');
+    group.label = `Default (from ${getDefaultPresetBasePath()}/)`;
+    for (const name of Object.keys(defaults)) {
+      group.appendChild(new Option(name, 'default/' + name));
+    }
+    select.appendChild(group);
+  }
+
+  const userPresets = getUserPresets();
+  if (Object.keys(userPresets).length) {
+    const group = document.createElement('optgroup');
+    group.label = 'My saved presets';
+    for (const name of Object.keys(userPresets)) {
+      group.appendChild(new Option(name, 'user/' + name));
+    }
+    select.appendChild(group);
+  }
+
+  if ([...select.options].some(option => option.value === previous)) {
+    select.value = previous;
+  }
+}
+
+function loadSelectedPreset() {
+  const selected = $id('preset-select').value;
+  if (!selected) return;
+
+  let params = null;
+  if (selected.startsWith('default/')) {
+    params = (window.__defaultPresets__ || {})[selected.slice(8)];
+  } else if (selected.startsWith('user/')) {
+    params = getUserPresets()[selected.slice(5)];
+  }
+
+  if (!params) return;
+  setInputValues(params);
+  persistAutosave('— loaded');
+}
+
+function savePreset() {
+  const name = $id('preset-name').value.trim();
+  if (!name) {
+    alert('Enter a name for this preset.');
+    return;
+  }
+
+  const presets = getUserPresets();
+  presets[name] = getInputValues();
+  setUserPresets(presets);
+  refreshPresetList();
+  $id('preset-select').value = 'user/' + name;
+  $id('preset-name').value = '';
+  persistAutosave('— preset saved');
+}
+
+function deletePreset() {
+  const selected = $id('preset-select').value;
+  if (!selected.startsWith('user/')) {
+    alert('Select one of your own saved presets to delete. Default presets are read-only in the browser.');
+    return;
+  }
+
+  const name = selected.slice(5);
+  if (!confirm(`Delete preset "${name}"?`)) return;
+  const presets = getUserPresets();
+  delete presets[name];
+  setUserPresets(presets);
+  refreshPresetList();
+  persistAutosave('— preset deleted');
+}
+
+async function loadDefaultPresets() {
+  const candidates = ['.github/prompts', 'prompts'];
+
+  for (const basePath of candidates) {
+    try {
+      const response = await fetch(`${basePath}/index.json`);
+      if (!response.ok) continue;
+
+      const names = await response.json();
+      const defaults = {};
+
+      await Promise.all(names.map(async name => {
+        try {
+          const presetResponse = await fetch(`${basePath}/${name}.json`);
+          if (presetResponse.ok) defaults[name] = await presetResponse.json();
+        } catch (error) {
+          console.warn('Failed to load preset', name, error);
+        }
+      }));
+
+      window.__defaultPresetBasePath__ = basePath;
+      window.__defaultPresets__ = defaults;
+      refreshPresetList();
+      return;
+    } catch (error) {
+      console.warn('Default preset index not available at', basePath, error);
+    }
+  }
+}
+
+async function initPyodide() {
+  try {
+    setStatus('Initializing Python environment — first load may take ~20 s…', 'loading');
+    pyodideInstance = await loadPyodide();
+    setStatus('Loading scientific packages (numpy, matplotlib)…', 'loading');
+    await pyodideInstance.loadPackage(['numpy', 'matplotlib']);
+    setStatus('✓ Python environment ready — enter the shared target SNR list and solve', 'ready');
+    $id('compute-btn').disabled = false;
+  } catch (error) {
+    console.error(error);
+    setStatus('✗ Failed to load Python environment: ' + error.message, 'error');
+  }
+}
+
+function buildTable(rows) {
+  let html = '<table class="snr-table"><thead><tr>';
+  html += '<th>Target SNR (shared)</th>';
+  html += '<th>Diffraction-limited photons</th>';
+  html += '<th>Seeing-limited IFU photons</th>';
+  html += '<th>IFU / Diffraction</th>';
+  html += '<th>IFU photons per spaxel</th>';
+  html += '</tr></thead><tbody>';
+
+  for (const row of rows) {
+    html += '<tr>';
+    html += `<td>${fmtNumber(row.target_snr)}</td>`;
+    html += `<td>${fmtNumber(row.compact_photons)}</td>`;
+    html += `<td>${fmtNumber(row.extended_photons)}</td>`;
+    html += `<td class="${ratioClass(row.ratio)}">${row.ratio.toFixed(2)}×</td>`;
+    html += `<td>${fmtNumber(row.extended_per_spaxel)}</td>`;
+    html += '</tr>';
+  }
+
+  html += '</tbody></table>';
+  $id('table-container').innerHTML = html;
+}
+
+function buildSummary(summary) {
+  const metrics = [
+    { label: 'Diffraction-limited extracted pixels', value: fmtNumber(summary.compact_pixels) },
+    { label: 'Seeing-limited IFU extracted pixels', value: fmtNumber(summary.extended_pixels) },
+    { label: 'Lowest diffraction photon target', value: fmtNumber(summary.min_compact) },
+    { label: 'Highest IFU photon target', value: fmtNumber(summary.max_extended) },
+    { label: 'Median photon penalty', value: fmtNumber(summary.median_ratio) + '×' }
+  ];
+
+  $id('summary-metrics').innerHTML = metrics.map(metric => `
+    <div class="metric-card">
+      <div class="metric-label">${metric.label}</div>
+      <div class="metric-value">${metric.value}</div>
+    </div>
+  `).join('');
+}
+
+async function runComputation() {
+  if (!pyodideInstance) return;
+
+  const targets = parsePositiveList('target_snr_values');
+  if (targets.length === 0) {
+    alert('Please enter at least one valid positive target SNR value.');
+    return;
+  }
+
+  $id('btn-text').textContent = 'Computing…';
+  $id('btn-spinner').classList.remove('d-none');
+  $id('compute-btn').disabled = true;
+
+  try {
+    const globals = pyodideInstance.globals;
+    globals.set('target_snr_json', JSON.stringify(targets));
+    globals.set('t_exp', Math.max(parseFloat(getVal('t_exp')) || 600, 1e-6));
+    globals.set('n_frames', Math.max(parseInt(getVal('n_frames'), 10) || 12, 1));
+    globals.set('dark', Math.max(parseFloat(getVal('dark')) || 0, 0));
+    globals.set('ron', Math.max(parseFloat(getVal('ron')) || 0, 0));
+    globals.set('extended_spaxels', Math.max(parseInt(getVal('extended_spaxels'), 10) || 30, 1));
+    globals.set('extended_extract', Math.max(parseInt(getVal('extended_extract'), 10) || 3, 1));
+    globals.set('compact_extract', Math.max(parseInt(getVal('compact_extract'), 10) || 3, 1));
+
+    const result = JSON.parse(await pyodideInstance.runPythonAsync(PYTHON_CODE));
+    $id('plot-img').src = 'data:image/png;base64,' + result.image;
+    buildTable(result.table);
+    buildSummary(result.summary);
+    persistAutosave('— auto-saved');
+
+    const output = $id('output-section');
+    output.classList.remove('d-none');
+    setTimeout(() => output.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+  } catch (error) {
+    console.error(error);
+    alert('Computation error:\n\n' + error.message);
+  } finally {
+    $id('btn-text').textContent = '⚡ Solve Photon Requirement';
+    $id('btn-spinner').classList.add('d-none');
+    $id('compute-btn').disabled = false;
+  }
+}
+
+restoreAutosave();
+setupAutosave();
+refreshPresetList();
+loadDefaultPresets();
+initPyodide();
+</script>
+</body>
+</html>
