@@ -40,6 +40,16 @@
       min-height: 100vh;
     }
 
+    p,
+    li,
+    td,
+    th,
+    small,
+    .card-body,
+    .table-responsive {
+      color: var(--text);
+    }
+
     .navbar {
       background: linear-gradient(135deg, rgba(15,23,42,0.97), rgba(30,41,59,0.95));
       border-bottom: 1px solid var(--border);
@@ -105,10 +115,23 @@
       color: #64748b;
     }
 
+    .form-select option {
+      background: var(--bg2);
+      color: var(--text);
+    }
+
     .form-text,
     .text-muted-soft {
       color: #64748b;
       font-size: 0.78rem;
+    }
+
+    .text-muted {
+      color: var(--muted) !important;
+    }
+
+    code {
+      color: #bfdbfe !important;
     }
 
     .input-group-text {
@@ -318,6 +341,45 @@
       border-radius: 8px;
       font-size: 0.82rem;
       padding: 0.3rem 0.85rem;
+    }
+
+    .btn-outline-info {
+      border-color: rgba(125, 211, 252, 0.7);
+      color: #bae6fd;
+    }
+
+    .btn-outline-info:hover,
+    .btn-outline-info:focus,
+    .btn-outline-info:active {
+      background: rgba(14, 116, 144, 0.3);
+      border-color: #7dd3fc;
+      color: #eff6ff;
+    }
+
+    .btn-outline-success {
+      border-color: rgba(74, 222, 128, 0.7);
+      color: #bbf7d0;
+    }
+
+    .btn-outline-success:hover,
+    .btn-outline-success:focus,
+    .btn-outline-success:active {
+      background: rgba(21, 128, 61, 0.3);
+      border-color: #4ade80;
+      color: #f0fdf4;
+    }
+
+    .btn-outline-danger {
+      border-color: rgba(248, 113, 113, 0.7);
+      color: #fecaca;
+    }
+
+    .btn-outline-danger:hover,
+    .btn-outline-danger:focus,
+    .btn-outline-danger:active {
+      background: rgba(185, 28, 28, 0.28);
+      border-color: #f87171;
+      color: #fff1f2;
     }
 
     footer {
@@ -977,7 +1039,6 @@ async function runComputation() {
     const result = JSON.parse(await pyodideInstance.runPythonAsync(PYTHON_CODE));
     $id('plot-img').src = 'data:image/png;base64,' + result.image;
     buildTable(result.table);
-    buildSummary(result.summary);
     persistAutosave('— auto-saved');
 
     const output = $id('output-section');
